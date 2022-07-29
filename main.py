@@ -1,5 +1,7 @@
 from tkinter import *
 import time
+
+
 class Game:
     def __init__(self, width, height):
         self.tk = Tk()
@@ -18,6 +20,7 @@ class Game:
         for x in range(0, 5):
             for i in range(0, 2):
                 self.canvas.create_image(x * w, i * h, image=self.bg, anchor='nw')
+
     def mainloop(self):
         while self.running == True:
             for sprite in self.sprites:
@@ -37,6 +40,7 @@ class Sprites:
         pass
     def coordinates(self):
         return self.coordinates
+
 
 class SpriteCoords:
      def __init__(self, x1=0, y1=0, x2=0, y2=0):
@@ -78,10 +82,17 @@ class StickmanSprite(Sprites):
         self.x = 2
 
     def jump(self, evt):
-        print(self.coordinates)
         if self.y == 0:
             self.y = -3
             self.jump_count = 0
+
+    def coords(self):
+        xy = list(self.game.canvas.coords(self.image))
+        self.coordinates.x1 = xy[0]
+        self.coordinates.y1 = xy[1]
+        self.coordinates.x2 = xy[0] + 24
+        self.coordinates.y2 = xy[1] + 24
+        return self.coordinates
 
     def animate(self, evt):
         if self.x != 0 and self.y == 0:
@@ -96,10 +107,34 @@ class StickmanSprite(Sprites):
                     self.game.canvas.itemconfig(self.image, image=self.move_left[self.current_image])
                 if self.x > 0:
                     self.game.canvas.itemconfig(self.image, image=self.move_right[self.current_image])
-                
 
-
-
+    def move(self, evt):
+        self.animate()
+        if self.y < 0:
+            self.jump_count += 1
+            # Здесь мое решение
+            if self.jump_count == 20:
+                self.jump_count = 0
+                self.y = +3
+        self.coordinates = self.coords()
+        left = True
+        right = True
+        top = True
+        bottom = True
+        falling = True
+        if self.y > 0 and self.coordinates.y2 >= self.game.ht:
+            self.y = 0
+            bottom = False
+        if self.y < 0 and self.coordinates.y1 <= 0:
+        # TODO В презентации стоит 0
+            self.y = 4
+            top = False
+        if self.x > 0 and self.coordinates.x1 >= 0:
+            self.x = 0
+            left = False
+        if self.x < 0 and self.coordinates.x2 <= self.h:
+            self.x = 0
+            right = False
 
 
 def within_x(co_1, co_2):
